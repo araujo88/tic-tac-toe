@@ -57,7 +57,7 @@ def human_input(game):
                 game[x][y] = 'x'
                 break
         except ValueError:
-            print("The coordinates you entered are not integers! Please enter a valid coordinate.")
+            print("The coordinates you entered are not valid! Please enter valid coordinates.")
 
     return game
 
