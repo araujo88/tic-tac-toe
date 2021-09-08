@@ -5,7 +5,7 @@ import random
 
 # Initialize game with matrix filled with empty strings
 def initialize_game():
-    game = [["" for x in range(3)] for y in range(3)]
+    game = [["" for i in range(3)] for j in range(3)]
     print("Welcome to Tic-tac-toe! Can you beat the computer?")
     return game
 
