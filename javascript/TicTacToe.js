@@ -23,6 +23,10 @@ let seed = randomInt(0, 1)
 let player1Input = false
 let player2Input = false
 let winner
+let xWin1
+let xWin2
+let yWin1
+let yWin2
 
 function checkClick() {
     if ((mousePos().x >= 0) && (mousePos().x < 200)) {
@@ -33,7 +37,7 @@ function checkClick() {
         posX = 300
         x1 = 1
     }
-    else if ((mousePos().x >= 500) && (mousePos().x <= 600)) {
+    else if ((mousePos().x >= 400) && (mousePos().x <= 600)) {
         posX = 500
         x1 = 2
     }
@@ -45,11 +49,12 @@ function checkClick() {
         posY = 300
         y1 = 1
     }
-    else if ((mousePos().y >= 500) && (mousePos().y <= 600)) {
+    else if ((mousePos().y >= 400) && (mousePos().y <= 600)) {
         posY = 500
         y1 = 2
     }
     console.log("Board x1: ", x1, "Board y1: ", y1, "Board value: ", board[x1][y1])
+    console.log("Mouse position x: ", mousePos().x, "Mouse position y: ", mousePos().y)
     console.log(board)
 }
 
@@ -57,7 +62,7 @@ function checkWinner(gameTile) {
     if (gameTile == 1) {
         console.log("'X' wins!")
         winner = "Game over! Player wins!"
-        wait(0.5, () => {
+        wait(2, () => {
             go('gameOver')
         })
         return -1
@@ -65,7 +70,7 @@ function checkWinner(gameTile) {
     if (gameTile == 2) {
         console.log("'O' wins!")
         winner = "Game over! Computer wins!"
-        wait(0.5, () => {
+        wait(2, () => {
             go('gameOver')
         })
         return 1
@@ -74,16 +79,78 @@ function checkWinner(gameTile) {
 
 function checkWin() {
     if ((board[0][0] == board[1][1]) && (board[1][1] == board[2][2]) && (board[0][0] != 0)) {
+        xWin1 = 0
+        yWin1 = 0
+        xWin2 = 2
+        yWin2 = 2
+        add([ 
+            sprite("diag1"),
+            layer("ui")
+        ])
         return checkWinner(board[0][0])
     }
     if ((board[0][2] == board[1][1]) && (board[1][1] == board[2][0]) && (board[0][2] != 0)) {
+        xWin1 = 0
+        yWin1 = 2
+        xWin2 = 2
+        yWin2 = 0
+        add([ 
+            sprite("diag2"),
+            layer("ui")
+        ])
         return checkWinner(board[0][2])
     }
     for (let i=0; i<3; i++) {
-        if ((board[0][i] == board[1][i]) && (board[1][i] == board[2][i]) && (board[0][i] != 0))
+        if ((board[0][i] == board[1][i]) && (board[1][i] == board[2][i]) && (board[0][i] != 0)) {
+            xWin1 = 0
+            yWin1 = i
+            xWin2 = 2
+            yWin2 = i
+            if (xWin1 == 0 && yWin1 == 0) {
+                add([ 
+                    sprite("row1"),
+                    layer("ui")
+                ])
+            }
+            else if (xWin1 == 0 && yWin1 == 1) {
+                add([ 
+                    sprite("row2"),
+                    layer("ui")
+                ])
+            }
+            else {
+                add([ 
+                    sprite("row3"),
+                    layer("ui")
+                ])
+            }
             return checkWinner(board[0][i])
-        if ((board[i][0] == board[i][1]) && (board[i][1] == board[i][2]) && (board[i][0] != 0))
+        }
+        if ((board[i][0] == board[i][1]) && (board[i][1] == board[i][2]) && (board[i][0] != 0)) {
+            xWin1 = i
+            yWin1 = 0
+            xWin2 = i
+            yWin2 = 2
+            if (xWin1 == 0 && yWin1 == 0) {
+                add([ 
+                    sprite("col1"),
+                    layer("ui")
+                ])
+            }
+            else if (xWin1 == 1 && yWin1 == 0) {
+                add([ 
+                    sprite("col2"),
+                    layer("ui")
+                ])
+            }
+            else {
+                add([ 
+                    sprite("col3"),
+                    layer("ui")
+                ])
+            }
             return checkWinner(board[i][0])
+        }
     }
     for (let i=0; i<3; i++) {
         for (let j=0; j<3; j++) {
@@ -94,7 +161,7 @@ function checkWin() {
     }
     console.log("Draw!")
     winner = "Draw!"
-    wait(0.5, () => {
+    wait(2, () => {
         go('gameOver')
     })
     return 0
@@ -115,6 +182,7 @@ function computerInput() {
                     height: height(),
                     tiled: true,
                 }),
+                play("pop")
             ]);
             console.log("Position placed for O! (x, y) = ", 100*(1+2*x2), 100*(1+2*y2))
             player2Input = false
@@ -128,11 +196,20 @@ function computerInput() {
 loadSprite('x', 'X.png')
 loadSprite('o', 'O.png')
 
+loadSprite('diag1', 'diag1.png')
+loadSprite('diag2', 'diag2.png')
+loadSprite('row1', 'row1.png')
+loadSprite('row2', 'row2.png')
+loadSprite('row3', 'row3.png')
+loadSprite('col1', 'col1.png')
+loadSprite('col2', 'col2.png')
+loadSprite('col3', 'col3.png')
+
 // Background
 loadSprite('background', 'board.png')
 
 // SFX
-//loadSound("suspense", "assets/sfx/suspense2.mp3")
+loadSound("pop", "pop.mp3")
 
 // Music
 //loadSound("intro", "assets/music/intro.mp3")
@@ -166,7 +243,7 @@ scene("game", () => {
     }
 
     if (player1Input == true) {
-        wait(1, () => {
+        wait(0.6, () => {
             mouseClick(() => {
                 checkClick()
                 if (board[x1][y1] == 0) {
@@ -179,6 +256,7 @@ scene("game", () => {
                             height: height(),
                             tiled: true,
                         }),
+                        play("pop")
                     ]);
                     console.log("Position placed for X! (x, y) = ", posX, posY)
                     player2Input = true
@@ -202,6 +280,10 @@ scene("menu", () => {
     console.log("Seed: ", seed)
     player1Input = false
     player2Input = false
+    xWin1 = null
+    xWin2 = null
+    yWin1 = null
+    xWin2 = null
     if (seed == 0) {
         player1Input = true
     }
@@ -312,6 +394,10 @@ scene("gameOver", () => {
                 console.log("Seed: ", seed)
                 player1Input = false
                 player2Input = false
+                xWin1 = null
+                xWin2 = null
+                yWin1 = null
+                xWin2 = null
                 if (seed == 0) {
                     player1Input = true
                 }
