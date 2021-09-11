@@ -27,6 +27,7 @@ let xWin1
 let xWin2
 let yWin1
 let yWin2
+let waitTime = 0.3
 
 function checkClick() {
     if ((mousePos().x >= 0) && (mousePos().x < 200)) {
@@ -65,6 +66,7 @@ function checkWinner(gameTile) {
         wait(2, () => {
             go('gameOver')
         })
+        waitTime = 0.5
         return -1
     }
     if (gameTile == 2) {
@@ -73,12 +75,14 @@ function checkWinner(gameTile) {
         wait(2, () => {
             go('gameOver')
         })
+        waitTime = 0.5
         return 1
     }
 }
 
 function checkWin() {
     if ((board[0][0] == board[1][1]) && (board[1][1] == board[2][2]) && (board[0][0] != 0)) {
+        waitTime = 3
         xWin1 = 0
         yWin1 = 0
         xWin2 = 2
@@ -90,6 +94,7 @@ function checkWin() {
         return checkWinner(board[0][0])
     }
     if ((board[0][2] == board[1][1]) && (board[1][1] == board[2][0]) && (board[0][2] != 0)) {
+        waitTime = 3
         xWin1 = 0
         yWin1 = 2
         xWin2 = 2
@@ -102,6 +107,7 @@ function checkWin() {
     }
     for (let i=0; i<3; i++) {
         if ((board[0][i] == board[1][i]) && (board[1][i] == board[2][i]) && (board[0][i] != 0)) {
+            waitTime = 3
             xWin1 = 0
             yWin1 = i
             xWin2 = 2
@@ -127,6 +133,7 @@ function checkWin() {
             return checkWinner(board[0][i])
         }
         if ((board[i][0] == board[i][1]) && (board[i][1] == board[i][2]) && (board[i][0] != 0)) {
+            waitTime = 3
             xWin1 = i
             yWin1 = 0
             xWin2 = i
@@ -164,10 +171,12 @@ function checkWin() {
     wait(2, () => {
         go('gameOver')
     })
+    waitTime = 0.5
     return 0
 }
 
 function computerInput() {
+    player1Input = false
     checkWin()
     while (true) {
         x2 = randomInt(0, 2);
@@ -243,10 +252,10 @@ scene("game", () => {
     }
 
     if (player1Input == true) {
-        wait(0.6, () => {
+        wait(waitTime, () => {
             mouseClick(() => {
                 checkClick()
-                if (board[x1][y1] == 0) {
+                if (board[x1][y1] == 0 && checkWin() == 2 && player1Input == true) {
                     board[x1][y1] = 1
                     add([
                         pos(posX, posY),
@@ -259,11 +268,12 @@ scene("game", () => {
                         play("pop")
                     ]);
                     console.log("Position placed for X! (x, y) = ", posX, posY)
-                    player2Input = true
                     player1Input = false
+                    player2Input = true
                     checkWin()
                     if (checkWin() == 2) {
-                        wait(0.5, () => {
+                        player1Input = false
+                        wait(waitTime, () => {
                             computerInput()
                             checkWin()
                         })
