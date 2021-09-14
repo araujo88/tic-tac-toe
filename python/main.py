@@ -2,5 +2,7 @@
 import TicTacToe
 
 if __name__ == "__main__":
-    tictactoe = TicTacToe.HumanVsRandom(plotGame=True)
-    tictactoe.run_game()
+    tictactoe1 = TicTacToe.HumanVsRandom(plotGame=True)
+    tictactoe2 = TicTacToe.ComputerVsComputer(plotGame=True)
+    tictactoe1.run_game()
+    tictactoe2.run_game()
