@@ -25,9 +25,14 @@ let yWin1
 let yWin2
 let waitTime = 0.5
 let difficulty
+let turn = 0
 
-function randomInt(min, max) { // min and max included 
+function randomInt(min, max) { // generates random integers between min and max
     return Math.floor(Math.random() * (max - min + 1) + min)
+}
+
+function randomElement(array) {  // catch random element from array
+    return array[Math.floor(Math.random()*array.length)];
 }
 
 function checkClick() {
@@ -327,35 +332,41 @@ function computerInput2() {
     player1Input = false
     checkWin()
 
-    let bestVal = -10
-    let moveVal
-
-    // Traverse all cells, evaluate minimax function for
-    // all empty cells. And return the cell with optimal
-    // value.
-    for (let i = 0; i < 3; i++) {      
-        for (let j = 0; j < 3; j++) {  
-        
-            // Check if cell is empty
-            if (board[i][j] == 0) {
+    if (turn == 0) {
+        x2 = randomElement([0, 2])
+        y2 = randomElement([0, 2])
+    }
+    else {
+        let bestVal = -10
+        let moveVal
+    
+        // Traverse all cells, evaluate minimax function for
+        // all empty cells. And return the cell with optimal
+        // value.
+        for (let i = 0; i < 3; i++) {      
+            for (let j = 0; j < 3; j++) {  
             
-                // Make the move
-                board[i][j] = 2
-
-                // compute evaluation function for this
-                // move.
-                moveVal = minimax(0, false)
-
-                // Undo the move
-                board[i][j] = 0
-
-                // If the value of the current move is
-                // more than the best value, then update
-                // best
-                if (moveVal > bestVal) {               
-                    x2 = i;
-                    y2 = j;
-                    bestVal = moveVal
+                // Check if cell is empty
+                if (board[i][j] == 0) {
+                
+                    // Make the move
+                    board[i][j] = 2
+    
+                    // compute evaluation function for this
+                    // move.
+                    moveVal = minimax(0, false)
+    
+                    // Undo the move
+                    board[i][j] = 0
+    
+                    // If the value of the current move is
+                    // more than the best value, then update
+                    // best
+                    if (moveVal > bestVal) {               
+                        x2 = i;
+                        y2 = j;
+                        bestVal = moveVal
+                    }
                 }
             }
         }
@@ -446,6 +457,7 @@ scene("game", () => {
                         play("pop")
                     ]);
                     console.log("Position placed for X! (x, y) = ", posX, posY)
+                    turn++
                     player1Input = false
                     player2Input = true
                     checkWin()
@@ -454,9 +466,11 @@ scene("game", () => {
                         wait(waitTime, () => {
                             if (difficulty == "easy") {
                                 computerInput()
+                                turn++
                             }
                             if (difficulty == "hard") {
                                 computerInput2()
+                                turn++
                             }
                             checkWin()
                         })
@@ -477,6 +491,7 @@ scene("menu", () => {
     xWin2 = null
     yWin1 = null
     xWin2 = null
+    turn = 0
     if (seed == 0) {
         player1Input = true
     }
@@ -537,7 +552,7 @@ scene("menu", () => {
         scale(2),
 		"button",
 		{
-			clickAction: () => window.open('https://github.com/araujo88/', '_blank'),
+			clickAction: () => window.open('https://github.com/araujo88/tic-tac-toe/tree/main/javascript', '_blank'),
 		},
 	]);
 
@@ -590,7 +605,8 @@ scene("gameOver", () => {
                 xWin1 = null
                 xWin2 = null
                 yWin1 = null
-                xWin2 = null
+                yWin2 = null
+                turn = 0
                 if (seed == 0) {
                     player1Input = true
                 }
