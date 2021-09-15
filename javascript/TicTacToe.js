@@ -8,10 +8,6 @@ kaboom({
     clearColor: [0, 0, 0, 0],
 })
 
-function randomInt(min, max) { // min and max included 
-    return Math.floor(Math.random() * (max - min + 1) + min)
-}
-
 let level = 0
 let totalScore = 0
 let posX
@@ -27,7 +23,12 @@ let xWin1
 let xWin2
 let yWin1
 let yWin2
-let waitTime = 0.3
+let waitTime = 0.5
+let difficulty
+
+function randomInt(min, max) { // min and max included 
+    return Math.floor(Math.random() * (max - min + 1) + min)
+}
 
 function checkClick() {
     if ((mousePos().x >= 0) && (mousePos().x < 200)) {
@@ -175,6 +176,40 @@ function checkWin() {
     return 0
 }
 
+function evaluate(gameTile) {
+    if (gameTile == 1) {
+        return -1
+    }
+    if (gameTile == 2) {
+        return 1
+    }
+}
+
+function checkBoard() {
+    if ((board[0][0] == board[1][1]) && (board[1][1] == board[2][2]) && (board[0][0] != 0)) {
+        return evaluate(board[0][0])
+    }
+    if ((board[0][2] == board[1][1]) && (board[1][1] == board[2][0]) && (board[0][2] != 0)) {
+        return evaluate(board[0][2])
+    }
+    for (let i=0; i<3; i++) {
+        if ((board[0][i] == board[1][i]) && (board[1][i] == board[2][i]) && (board[0][i] != 0)) {
+            return evaluate(board[0][i])
+        }
+        if ((board[i][0] == board[i][1]) && (board[i][1] == board[i][2]) && (board[i][0] != 0)) {
+            return evaluate(board[i][0])
+        }
+    }
+    for (let i=0; i<3; i++) {
+        for (let j=0; j<3; j++) {
+            if (board[i][j] == 0) {
+                return 2
+            }
+        }
+    }
+    return 0
+}
+
 function computerInput() {
     player1Input = false
     checkWin()
@@ -200,6 +235,148 @@ function computerInput() {
         }
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////
+
+function isMovesLeft() {
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                if (board[i][j] == 0) {
+                    return true
+                }
+            }
+        }
+        return false
+}
+
+function minimax(depth, isMax) {
+    let score = checkBoard()
+    let best
+    
+    // If Maximizer has won the game return his/her
+    // evaluated score
+    if (score == 1) {
+        return score
+    }
+    
+    // If Minimizer has won the game return his/her
+    // evaluated score
+    if (score == -1) {
+        return score
+    }
+    
+    // If there are no more moves and no winner then
+    // it is a tie
+    if (isMovesLeft() == false) {
+        return 0
+    }
+    
+    // If this maximizer's move
+    if (isMax) {    
+        best = -1000
+    
+        // Traverse all cells
+        for (let i = 0; i < 3; i++) {      
+            for (let j = 0; j < 3; j++) {  
+                
+                // Check if cell is empty
+                if (board[i][j] == 0) {
+                    
+                    // Make the move
+                    board[i][j] = 2
+    
+                    // Call minimax recursively and choose
+                    // the maximum value
+                    best = Math.max(best, minimax(depth + 1, !isMax))
+                    
+                    // Undo the move
+                    board[i][j] = 0
+                }
+            }
+        }
+        return best
+    }
+    // If this minimizer's move
+    else {
+        best = 1000
+    
+        // Traverse all cells
+        for (let i = 0; i < 3; i++) {      
+            for (let j = 0; j < 3; j++) {  
+                
+                // Check if cell is empty
+                if (board[i][j] == 0) {
+                    
+                    // Make the move
+                    board[i][j] = 1
+    
+                    // Call minimax recursively and choose
+                    // the minimum value
+                    best = Math.min(best, minimax(depth + 1, !isMax))
+    
+                    // Undo the move
+                    board[i][j] = 0
+                }
+            }
+        }
+        return best
+    }
+}
+
+function computerInput2() {
+    player1Input = false
+    checkWin()
+
+    let bestVal = -10
+    let moveVal
+
+    // Traverse all cells, evaluate minimax function for
+    // all empty cells. And return the cell with optimal
+    // value.
+    for (let i = 0; i < 3; i++) {      
+        for (let j = 0; j < 3; j++) {  
+        
+            // Check if cell is empty
+            if (board[i][j] == 0) {
+            
+                // Make the move
+                board[i][j] = 2
+
+                // compute evaluation function for this
+                // move.
+                moveVal = minimax(0, false)
+
+                // Undo the move
+                board[i][j] = 0
+
+                // If the value of the current move is
+                // more than the best value, then update
+                // best
+                if (moveVal > bestVal) {               
+                    x2 = i;
+                    y2 = j;
+                    bestVal = moveVal
+                }
+            }
+        }
+    }
+    board[x2][y2] = 2;
+    add([
+        pos(100*(1+2*x2), 100*(1+2*y2)),
+        origin('center'),
+        sprite("o", {
+            width: width(),
+            height: height(),
+            tiled: true,
+        }),
+        play("pop")
+    ]);
+    console.log("Position placed for O! (x, y) = ", 100*(1+2*x2), 100*(1+2*y2))
+    player2Input = false
+    player1Input = true
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
 
 // Sprites
 loadSprite('x', 'X.png')
@@ -248,7 +425,8 @@ scene("game", () => {
     ])
 
     if (player2Input == true) {
-        computerInput()
+        // computerInput()
+        computerInput2()
     }
 
     if (player1Input == true) {
@@ -274,7 +452,12 @@ scene("game", () => {
                     if (checkWin() == 2) {
                         player1Input = false
                         wait(waitTime, () => {
-                            computerInput()
+                            if (difficulty == "easy") {
+                                computerInput()
+                            }
+                            if (difficulty == "hard") {
+                                computerInput2()
+                            }
                             checkWin()
                         })
                     }
@@ -316,7 +499,7 @@ scene("menu", () => {
         scale(2),
 		"button",
 		{
-			clickAction: () => {go('game')}
+			clickAction: () => {go('selectDifficulty')}
 		},
 	]);
 
@@ -414,7 +597,7 @@ scene("gameOver", () => {
                 else {
                     player2Input = true
                 }
-                go('game')
+                go('selectDifficulty')
             }
 		},
 	]);
@@ -444,6 +627,96 @@ scene("gameOver", () => {
 		text("Menu"),
         origin('center'),
 		pos(width()/2, height()/2+40),
+        scale(2),
+		color(0, 0, 0)
+	]);
+
+
+	action("button", b => {
+		if (b.isHovered()) {
+			b.use(color(0.7, 0.7, 0.7));
+		} else {
+			b.use(color(1, 1, 1));
+		}
+
+		if (b.isClicked()) {
+			b.clickAction();
+		}
+
+	});
+});
+
+scene("selectDifficulty", () => {
+
+	add([
+		text("Select difficulty:"),
+        origin('center'),
+		pos(width()/2, height()/8),
+        color(0, 0, 0),
+        scale(3)
+	]);
+
+	add([
+		rect(160, 20),
+        origin('center'),
+		pos(width()/2, height()/2),
+        scale(2),
+		"button",
+		{
+			clickAction: () => {
+                difficulty = "easy"
+                go('game')
+            }
+		},
+	]);
+
+	add([
+		text("Easy"),
+        origin('center'),
+		pos(width()/2, height()/2),
+        scale(2),
+		color(0, 0, 0)
+	]);
+
+    add([
+		rect(160, 20),
+        origin('center'),
+		pos(width()/2, height()/2+40),
+        scale(2),
+		"button",
+		{
+			clickAction: () => {
+                difficulty = "hard"
+                go('game')
+            }
+		},
+	]);
+
+	add([
+		text("Hard"),
+        origin('center'),
+		pos(width()/2, height()/2+40),
+        scale(2),
+		color(0, 0, 0)
+	]);
+
+	add([
+		rect(160, 20),
+        origin('center'),
+		pos(width()/2, height()/2+80),
+        scale(2),
+		"button",
+		{
+			clickAction: () => {
+                go('menu')
+            }
+		},
+	]);
+
+	add([
+		text("Menu"),
+        origin('center'),
+		pos(width()/2, height()/2+80),
         scale(2),
 		color(0, 0, 0)
 	]);
